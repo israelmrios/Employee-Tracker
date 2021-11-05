@@ -2,19 +2,7 @@
 const inquirer = require('inquirer');
 const express = require('express');
 const mysql = require('mysql2');
-const figlet = require('figlet');
-
-
-
-
-// figlet('EMPLOYEE MANAGER', function (err, data) {
-//     if (err) {
-//         console.log('Something went wrong...');
-//         console.dir(err);
-//         return;
-//     }
-//     console.log(data)
-// });
+const sequelize = require('./config/connection');
 
 // WHEN I start the application
 // THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
@@ -27,7 +15,11 @@ function init() {
             message: "What would you like to do?",
             choices: ["View All Employees", "Add Employee", "Update Employee Role", "View All Roles", "Add Role", "View All Departments", "Add Department"]
             }
-        ])
+        ]).then(data => {
+            sequelize.query(`SELECT * FROM ${data.choices}`, function (err, results) {
+                console.log(results);
+            });
+        })
     }
 
 initialPrompt();
@@ -46,4 +38,6 @@ initialPrompt();
 // THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
 // WHEN I choose to update an employee role
 // THEN I am prompted to select an employee to update and their new role and this information is updated in the database 
+
+sequelize.sync();
 init();

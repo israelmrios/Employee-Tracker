@@ -1,22 +1,36 @@
 // GIVEN a command-line application that accepts user input
 const inquirer = require('inquirer');
-const chalk = require('chalk');
+const express = require('express');
+const mysql = require('mysql2');
+const figlet = require('figlet');
 
 
 
 
-
+// figlet('EMPLOYEE MANAGER', function (err, data) {
+//     if (err) {
+//         console.log('Something went wrong...');
+//         console.dir(err);
+//         return;
+//     }
+//     console.log(data)
+// });
 
 // WHEN I start the application
 // THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
 function init() {
-    console.log(chalk.blue('EMPLOYEE MANAGER'));
-        inquirer.prompt({
+    function initialPrompt() {
+        inquirer.prompt([
+            {
             type: "list",
             name: "whatToDo",
             message: "What would you like to do?",
-            choices: ["Add Employee", "Update Employee Role", "View All Roles", "Add Role", "View All Departments", "Add Department"]
-        })
+            choices: ["View All Employees", "Add Employee", "Update Employee Role", "View All Roles", "Add Role", "View All Departments", "Add Department"]
+            }
+        ])
+    }
+
+initialPrompt();
 }
 // WHEN I choose to view all departments
 // THEN I am presented with a formatted table showing department names and department ids

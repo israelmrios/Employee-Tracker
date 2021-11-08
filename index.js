@@ -131,13 +131,13 @@ function viewAllRoles() {
 
 function addRole() {
     db.getJustDepartment().then(([data]) => {
-        const department = data.map((element) => {
-            return { name: element.name, value: element.id };
+        const department = data.map((dept) => {
+            return { name: dept.name, value: dept.id };
         });
         inquirer.prompt([
             {
                 type: "input",
-                name: "department",
+                name: "title",
                 message: "Please enter the New Role?"
             },
             {
@@ -150,11 +150,12 @@ function addRole() {
                 name: "department",
                 message: "Please select which department this role belongs to?",
                 choices: department,
-            }
+            },
         ]).then((data) => {
-            console.log(data)
-            let departmentID;
-
+            db.newRole(data).then(() => {
+                console.log(`\n You just added ${data.title} with a salary of ${data.salary} to the database. \n`);
+                initialPrompt();
+            })
         })
 
 

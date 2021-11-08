@@ -35,11 +35,11 @@ class Business {
     }
 
     getJustDepartment(){
-        return this.connection.promise().query("SELECT id, name FROM department;")
+        return this.connection.promise().query("SELECT name, id FROM department;")
     }
 
-    newRole(){
-        return this.connection.promise.query(`INSERT INTO department(id, name) VALUES (id, "${data.department}")`)
+    newRole(data){
+        return this.connection.promise().query(`INSERT INTO role (title, salary, department_id) VALUES ("${data.title}", "${data.salary}", ${data.department});`)
     }
     
 }

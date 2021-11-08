@@ -96,6 +96,7 @@ function addEmployee() {
 function updateEmployeeRole() {
     let names = []
     let roles = []
+    let i =;
 
     db.getEmployees().then(([data]) => {
         // console.log(data);
@@ -136,7 +137,16 @@ function updateEmployeeRole() {
                 choices: roles
             }
         ]).then((data) => {
-            console.log(data);
+            // console.log(data)
+            indexOf(roles, data.roleOptions);
+            function indexOf(array, value) {
+                for (let i = 0; i < array.length; i++) {
+                    if (array[i] === value) {
+                        console.log(i);
+                        return i;
+                    }
+                }
+            }
         })
     })
 

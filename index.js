@@ -94,63 +94,124 @@ function addEmployee() {
 }
 
 function updateEmployeeRole() {
-    let names = []
-    let roles = []
-    let i =;
-
-    db.getEmployees().then(([data]) => {
-        // console.log(data);
-        const firstName = Object.keys(data[0])[1];
-        const lastName = Object.keys(data[0])[2];
-
-        for (let i = 0; i < data.length; i++) {
-            let name = [data[i][firstName], data[i][lastName]].join(" ");
-            // console.log(name);
-            names.push(name)
-        }
-        // console.log(names);
-        // console.log(employeeOptions);
-        return names
-    }).then(() => {
-        db.getRoles().then(([data]) => {
-            const title = Object.keys(data[0])[1];
-
-            for (let i = 0; i < data.length; i++) {
-                roles.push(data[i][title])
-            }
-            // console.log(roles);
-            // console.log(names);
-            return roles
-        })
-    }).then(() => {
+    db.employeeAndRole().then(([data]) => {
+        const names = data.map((element) => {
+            return { name: `${element.first_name} ${element.last_name}`, value: element.id, };
+        });
+        const roles = data.map((element) => {
+            return { name: element.title, value: element.role_id };
+        });
         inquirer.prompt([
             {
                 type: "list",
-                name: "employeeList",
-                message: "Please select which employee you would like to update?",
-                choices: names
+                name: "name",
+                message: "Which employee would you like to change",
+                choices: names,
             },
             {
                 type: "list",
-                name: "roleOptions",
-                message: "Please select employees New Role?",
-                choices: roles
+                name: "role",
+                message: "What is their new role?",
+                choices: roles,
+            },
+        ]).then((data) => {
+            db.changeEmployeeRole(data).then(() => {
+                console.log(`\n You just updated ${data.name} to ${data.role} in the database. \n`);
+                initialPrompt();
+            });
+        })
+    })
+}
+
+function viewAllRoles() {
+    db.getAllRoles().then(([data]) => {
+        console.table(data)
+    }).then(() => initialPrompt());
+}
+
+function addRole() {
+    db.getJustDepartment().then(([data]) => {
+        const department = data.map((element) => {
+            return { name: element.name, value: element.id };
+        });
+        inquirer.prompt([
+            {
+                type: "input",
+                name: "department",
+                message: "Please enter the New Role?"
+            },
+            {
+                type: "number",
+                name: "salary",
+                message: "Please enter the salary for this role?"
+            },
+            {
+                type: "list",
+                name: "department",
+                message: "Please select which department this role belongs to?",
+                choices: department,
             }
         ]).then((data) => {
-            // console.log(data)
-            indexOf(roles, data.roleOptions);
-            function indexOf(array, value) {
-                for (let i = 0; i < array.length; i++) {
-                    if (array[i] === value) {
-                        console.log(i);
-                        return i;
-                    }
-                }
-            }
+            console.log(data)
+            let departmentID;
+
         })
+
+
     })
 
 }
+
+// function updateEmployeeRole() {
+//     let names = []
+//     let roles = []
+
+//     db.getEmployees().then(([data]) => {
+//         // console.log(data);
+//         const firstName = Object.keys(data[0])[1];
+//         const lastName = Object.keys(data[0])[2];
+
+//         for (let i = 0; i < data.length; i++) {
+//             let name = [data[i][firstName], data[i][lastName]].join(" ");
+//             names.push(name)
+//         }
+//         return names
+//     }).then(() => {
+//         db.getRoles().then(([data]) => {
+//             const title = Object.keys(data[0])[1];
+
+//             for (let i = 0; i < data.length; i++) {
+//                 roles.push(data[i][title])
+//             }
+//             // console.log(roles);
+//             // console.log(names);
+//             return roles
+//         })
+//     }).then(() => {
+//         inquirer.prompt([
+//             {
+//                 type: "list",
+//                 name: "name",
+//                 message: "Please select which employee you would like to update?",
+//                 choices: names
+//             },
+//             {
+//                 type: "list",
+//                 name: "role",
+//                 message: "Please select employees New Role?",
+//                 choices: roles
+//             }
+//         ]).then((data) => {
+//             console.log(data)
+//             db.changeEmployeeRole(data).then(() => {
+//                 console.log(`\n You just updated ${data.name} to ${data.role} in the database. \n`);
+//                 initialPrompt();
+//             })
+//         })
+
+//     })
+
+// }
 
 // const updateEmployeeRole = async () => {
 //     let names = []

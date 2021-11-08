@@ -14,14 +14,33 @@ class Business {
         return this.connection.promise().query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${data.firstName}", "${data.lastName}", ${data.role}, ${data.manager});`);
     }
 
-    getEmployees(){
-        return this.connection.promise().query("SELECT id, first_name, employee.last_name FROM employee;");
+    // getEmployees(){
+    //     return this.connection.promise().query("SELECT id, first_name, employee.last_name FROM employee;");
+    // }
+
+    // getRoles(){
+    //     return this.connection.promise().query("SELECT id, title FROM role;")
+    // }
+
+    employeeAndRole(){
+        return this.connection.promise().query("SELECT role.title, employee.* FROM employee LEFT JOIN role ON role.id = employee.role_id;")
     }
 
-    getRoles(){
-        return this.connection.promise().query("SELECT id, title FROM role;")
+    changeEmployeeRole(data){
+        return this.connection.promise().query(`UPDATE employee SET role_id = "${data.role}" WHERE employee.id = ${data.name};`)
     }
 
+    getAllRoles(){
+        return this.connection.promise().query("SELECT role.title, role.id, role.salary, department.name AS department FROM role LEFT JOIN department ON role.department_id = department.id;")
+    }
+
+    getJustDepartment(){
+        return this.connection.promise().query("SELECT id, name FROM department;")
+    }
+
+    newRole(){
+        return this.connection.promise.query(`INSERT INTO department(id, name) VALUES (id, "${data.department}")`)
+    }
     
 }
 

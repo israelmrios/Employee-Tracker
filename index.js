@@ -93,14 +93,15 @@ function addEmployee() {
     })
 }
 
-let names = []
+function updateEmployeeRole() {
+    let names = []
+    let roles = []
 
-const employeeOptions = () => {
     db.getEmployees().then(([data]) => {
         // console.log(data);
         const firstName = Object.keys(data[0])[1];
         const lastName = Object.keys(data[0])[2];
-        
+
         for (let i = 0; i < data.length; i++) {
             let name = [data[i][firstName], data[i][lastName]].join(" ");
             // console.log(name);
@@ -109,37 +110,19 @@ const employeeOptions = () => {
         // console.log(names);
         // console.log(employeeOptions);
         return names
-    })
-}
+    }).then(() => {
+        db.getRoles().then(([data]) => {
+            const title = Object.keys(data[0])[1];
 
-let roles = []
-
-const roleOptions = () => {
-    db.getRoles().then(([data]) => {
-        const title = Object.keys(data[0])[1];
-        
-        for (let i = 0; i < data.length; i++) {
-            roles.push(data[i][title])
-        }
-        // console.log(roles);
-        // console.log(names);
-        return roles
-    })
-}
-
-const updateEmployeeRole = async () => {
-    const employees = await employeeOptions();
-//     console.log(employeeOptions)
-// console.log(employees)
-    const role = await roleOptions();
-
-    const results = await runPrompt(names, roles);
-    console.log(names)
-
-}
-
-const runPrompt = (names, roles) => {
-        return inquirer.prompt([
+            for (let i = 0; i < data.length; i++) {
+                roles.push(data[i][title])
+            }
+            // console.log(roles);
+            // console.log(names);
+            return roles
+        })
+    }).then(() => {
+        inquirer.prompt([
             {
                 type: "list",
                 name: "employeeList",
@@ -155,7 +138,65 @@ const runPrompt = (names, roles) => {
         ]).then((data) => {
             console.log(data);
         })
+    })
+
 }
+
+// const updateEmployeeRole = async () => {
+//     let names = []
+//     let roles = []
+
+//     const employeeOptions = () => {
+//         db.getEmployees().then(([data]) => {
+//             // console.log(data);
+//             const firstName = Object.keys(data[0])[1];
+//             const lastName = Object.keys(data[0])[2];
+
+//             for (let i = 0; i < data.length; i++) {
+//                 let name = [data[i][firstName], data[i][lastName]].join(" ");
+//                 // console.log(name);
+//                 names.push(name)
+//             }
+//             // console.log(names);
+//             // console.log(employeeOptions);
+//             return names
+//         })
+//     }
+
+//     const roleOptions = () => {
+//         db.getRoles().then(([data]) => {
+//             const title = Object.keys(data[0])[1];
+
+//             for (let i = 0; i < data.length; i++) {
+//                 roles.push(data[i][title])
+//             }
+//             // console.log(roles);
+//             // console.log(names);
+//             return roles
+//         })
+//     }
+
+//     const runPrompt = (names, roles) => {
+//         return inquirer.prompt([
+//             {
+//                 type: "list",
+//                 name: "employeeList",
+//                 message: "Please select which employee you would like to update?",
+//                 choices: names
+//             },
+//             {
+//                 type: "list",
+//                 name: "roleOptions",
+//                 message: "Please select employees New Role?",
+//                 choices: roles
+//             }
+//         ]).then((data) => {
+//             console.log(data);
+//         })
+//     }
+// }
+
+
 
 function openingBanner() {
     figlet.text('EMPLOYEE TRACKER', {

@@ -1,11 +1,14 @@
 // GIVEN a command-line application that accepts user input
 const inquirer = require('inquirer');
 const db = require('./db');
+const figlet = require('figlet');
+const { getEmployees, getRoles } = require('./db');
 require('console.table');
 
 // WHEN I start the application
 // THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
 function init() {
+    // openingBanner();
     initialPrompt();
 }
 
@@ -83,12 +86,91 @@ function addEmployee() {
             choices: [1, 2]
         }
     ]).then((data) => {
-        console.log(data);
-        db.newEmployee().then(() => {
-            console.log(`\n You just added ${data.firstName} ${data.lastName} to database.`);
+        db.newEmployee(data).then(() => {
+            console.log(`\n You just added ${data.firstName} ${data.lastName} to database. \n`);
             initialPrompt();
         })
     })
+}
+
+let names = []
+
+const employeeOptions = () => {
+    db.getEmployees().then(([data]) => {
+        // console.log(data);
+        const firstName = Object.keys(data[0])[1];
+        const lastName = Object.keys(data[0])[2];
+        
+        for (let i = 0; i < data.length; i++) {
+            let name = [data[i][firstName], data[i][lastName]].join(" ");
+            // console.log(name);
+            names.push(name)
+        }
+        // console.log(names);
+        // console.log(employeeOptions);
+        return names
+    })
+}
+
+let roles = []
+
+const roleOptions = () => {
+    db.getRoles().then(([data]) => {
+        const title = Object.keys(data[0])[1];
+        
+        for (let i = 0; i < data.length; i++) {
+            roles.push(data[i][title])
+        }
+        // console.log(roles);
+        // console.log(names);
+        return roles
+    })
+}
+
+const updateEmployeeRole = async () => {
+    const employees = await employeeOptions();
+//     console.log(employeeOptions)
+// console.log(employees)
+    const role = await roleOptions();
+
+    const results = await runPrompt(names, roles);
+    console.log(names)
+
+}
+
+const runPrompt = (names, roles) => {
+        return inquirer.prompt([
+            {
+                type: "list",
+                name: "employeeList",
+                message: "Please select which employee you would like to update?",
+                choices: names
+            },
+            {
+                type: "list",
+                name: "roleOptions",
+                message: "Please select employees New Role?",
+                choices: roles
+            }
+        ]).then((data) => {
+            console.log(data);
+        })
+}
+
+function openingBanner() {
+    figlet.text('EMPLOYEE TRACKER', {
+        font: 'DOS Rebel',
+        horizontalLayout: 'default',
+        verticalLayout: 'default',
+        width: 150,
+        whitespaceBreak: true
+    }, function (err, data) {
+        if (err) {
+            console.log('Something went wrong...');
+            console.dir(err);
+            return;
+        }
+    });
 }
 
 init();

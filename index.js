@@ -1,14 +1,12 @@
-// GIVEN a command-line application that accepts user input
 const inquirer = require('inquirer');
 const db = require('./db');
-const figlet = require('figlet');
-const { getEmployees, getRoles } = require('./db');
+const logo = require('asciiart-logo');
 require('console.table');
 
-// WHEN I start the application
-// THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
+
 function init() {
-    // openingBanner();
+    const banner = logo({ name: "Employee Tracker" }).render();
+    console.log(banner);
     initialPrompt();
 }
 
@@ -22,6 +20,7 @@ function initialPrompt() {
         }
     ]).then((data) => {
         let choice = data.whatToDo;
+        console.log(choice)
         switch (choice) {
             case "View All Employees":
                 viewAllEmployees();
@@ -49,14 +48,12 @@ function initialPrompt() {
             default:
                 process.exit()
         }
-        // WHEN I choose to add an employee 
-        // THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
     })
 }
 
-
 function viewAllEmployees() {
     db.findAllEmployees().then(([data]) => {
+        console.log('\n')
         console.table(data)
     }).then(() => initialPrompt());
 }
@@ -65,42 +62,74 @@ function addEmployee() {
     inquirer.prompt([
         {
             type: "input",
-            name: "firstName",
+            name: "first_name",
             message: "Please enter employees First Name?"
         },
         {
             type: "input",
-            name: "lastName",
+            name: "last_name",
             message: "Please enter employees Last Name?"
         },
-        {
-            type: "list",
-            name: "role",
-            message: "Please enter employees Role?",
-            choices: [1, 2]
-        },
-        {
-            type: "list",
-            name: "manager",
-            message: "Please enter employees First Name?",
-            choices: [1, 2]
-        }
     ]).then((data) => {
-        db.newEmployee(data).then(() => {
-            console.log(`\n You just added ${data.firstName} ${data.lastName} to database. \n`);
-            initialPrompt();
+        let empFirst = data.first_name;
+        let empLast = data.last_name;
+
+        db.getAllRoles().then(([data]) => {
+
+            const roleOptions = data.map(({ id, title }) => ({
+                name: title,
+                value: id
+            }))
+
+            inquirer.prompt([{
+                type: "list",
+                name: "role",
+                message: "Please enter employees Role?",
+                choices: roleOptions
+            }]).then(res => {
+                let roleId = res.role;
+
+                db.findAllEmployees().then(([data]) => {
+                    const managerOptions = data.map(({ id, first_name, last_name }) => ({
+                        name: `${first_name} ${last_name}`,
+                        value: id
+                    }));
+
+                    inquirer.prompt([{
+                        type: "list",
+                        name: "manager",
+                        message: "Please enter employees Manager?",
+                        choices: managerOptions
+                    }]).then(res => {
+                        let newEmployee = {
+                            manager_id: res.manager,
+                            role_id: roleId,
+                            first_name: empFirst,
+                            last_name: empLast
+                        }
+
+                        db.newEmployee(newEmployee);
+                    }).then(() => console.log(`added ${empFirst} ${empLast}`)).then(() => initialPrompt())
+                })
+            })
         })
-    })
+    });
+
+
+
+
+
 }
 
 function updateEmployeeRole() {
-    db.employeeAndRole().then(([data]) => {
-        const names = data.map((element) => {
-            return { name: `${element.first_name} ${element.last_name}`, value: element.id, };
-        });
-        const roles = data.map((element) => {
-            return { name: element.title, value: element.role_id };
-        });
+    db.findAllEmployees().then(([data]) => {
+
+
+        const names = data.map(({ id, first_name, last_name }) => ({
+            name: `${first_name} ${last_name}`,
+            value: id
+        }));
+
         inquirer.prompt([
             {
                 type: "list",
@@ -108,17 +137,23 @@ function updateEmployeeRole() {
                 message: "Which employee would you like to change",
                 choices: names,
             },
-            {
-                type: "list",
-                name: "role",
-                message: "What is their new role?",
-                choices: roles,
-            },
+
         ]).then((data) => {
-            db.changeEmployeeRole(data).then(() => {
-                console.log(`\n You just updated ${data.name} to ${data.role} in the database. \n`);
-                initialPrompt();
-            });
+            let empId = data.name;
+            db.getAllRoles().then(([data]) => {
+
+                const roleOptions = data.map(({ id, title }) => ({
+                    name: title,
+                    value: id
+                }));
+
+                inquirer.prompt([{
+                    type: "list",
+                    name: "roleId",
+                    message: "What is the new role for the employee? ",
+                    choices: roleOptions,
+                }]).then(res => db.changeEmployeeRole(empId, res.roleId)).then(() => console.log('updated the role')).then(() => initialPrompt())
+            })
         })
     })
 }
@@ -163,126 +198,25 @@ function addRole() {
 
 }
 
-// function updateEmployeeRole() {
-//     let names = []
-//     let roles = []
+function viewAllDepartments() {
+    db.getJustDepartment().then(([data]) => {
+        console.log('\n')
+        console.table(data)
+    }).then(() => initialPrompt());
+}
 
-//     db.getEmployees().then(([data]) => {
-//         // console.log(data);
-//         const firstName = Object.keys(data[0])[1];
-//         const lastName = Object.keys(data[0])[2];
-
-//         for (let i = 0; i < data.length; i++) {
-//             let name = [data[i][firstName], data[i][lastName]].join(" ");
-//             names.push(name)
-//         }
-//         return names
-//     }).then(() => {
-//         db.getRoles().then(([data]) => {
-//             const title = Object.keys(data[0])[1];
-
-//             for (let i = 0; i < data.length; i++) {
-//                 roles.push(data[i][title])
-//             }
-//             // console.log(roles);
-//             // console.log(names);
-//             return roles
-//         })
-//     }).then(() => {
-//         inquirer.prompt([
-//             {
-//                 type: "list",
-//                 name: "name",
-//                 message: "Please select which employee you would like to update?",
-//                 choices: names
-//             },
-//             {
-//                 type: "list",
-//                 name: "role",
-//                 message: "Please select employees New Role?",
-//                 choices: roles
-//             }
-//         ]).then((data) => {
-//             console.log(data)
-//             db.changeEmployeeRole(data).then(() => {
-//                 console.log(`\n You just updated ${data.name} to ${data.role} in the database. \n`);
-//                 initialPrompt();
-//             })
-//         })
-
-//     })
-
-// }
-
-// const updateEmployeeRole = async () => {
-//     let names = []
-//     let roles = []
-
-//     const employeeOptions = () => {
-//         db.getEmployees().then(([data]) => {
-//             // console.log(data);
-//             const firstName = Object.keys(data[0])[1];
-//             const lastName = Object.keys(data[0])[2];
-
-//             for (let i = 0; i < data.length; i++) {
-//                 let name = [data[i][firstName], data[i][lastName]].join(" ");
-//                 // console.log(name);
-//                 names.push(name)
-//             }
-//             // console.log(names);
-//             // console.log(employeeOptions);
-//             return names
-//         })
-//     }
-
-//     const roleOptions = () => {
-//         db.getRoles().then(([data]) => {
-//             const title = Object.keys(data[0])[1];
-
-//             for (let i = 0; i < data.length; i++) {
-//                 roles.push(data[i][title])
-//             }
-//             // console.log(roles);
-//             // console.log(names);
-//             return roles
-//         })
-//     }
-
-//     const runPrompt = (names, roles) => {
-//         return inquirer.prompt([
-//             {
-//                 type: "list",
-//                 name: "employeeList",
-//                 message: "Please select which employee you would like to update?",
-//                 choices: names
-//             },
-//             {
-//                 type: "list",
-//                 name: "roleOptions",
-//                 message: "Please select employees New Role?",
-//                 choices: roles
-//             }
-//         ]).then((data) => {
-//             console.log(data);
-//         })
-//     }
-// }
-
-
-
-function openingBanner() {
-    figlet.text('EMPLOYEE TRACKER', {
-        font: 'DOS Rebel',
-        horizontalLayout: 'default',
-        verticalLayout: 'default',
-        width: 150,
-        whitespaceBreak: true
-    }, function (err, data) {
-        if (err) {
-            console.log('Something went wrong...');
-            console.dir(err);
-            return;
+function addDepartment() {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "department",
+            message: "What is the new department name?"
         }
+    ]).then((data) => {
+        db.newDepartment(data).then(() => {
+            console.log(`\n You just added a ${data.department} department to the database. \n`);
+            initialPrompt();
+        })
     });
 }
 

@@ -1,5 +1,6 @@
 const connection = require('../config/connection');
 
+// Using a class to be able to export all the functions
 class Business {
     constructor(connection) {
         this.connection = connection;
@@ -25,10 +26,12 @@ class Business {
         return this.connection.promise().query(`INSERT INTO role (title, salary, department_id) VALUES ("${data.title}", "${data.salary}", ${data.department});`)
     }
 
+    // Using single character wildcard to insert object data
     newEmployee(data) {
         return this.connection.promise().query('INSERT INTO employee SET ?', data);
     }
 
+    // Using single character wildcard and two parameters to update two rows in a table
     changeEmployeeRole(eid, rid) {
         return this.connection.promise().query('UPDATE employee SET role_id =? WHERE employee.id =?;', [rid, eid])
     }

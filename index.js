@@ -1,5 +1,6 @@
 const inquirer = require('inquirer');
 const db = require('./db');
+// I included this package to create a custom logo at the start of the application
 const logo = require('asciiart-logo');
 require('console.table');
 
@@ -10,6 +11,7 @@ function init() {
     initialPrompt();
 }
 
+// Included a "Quit" option to make it user friendly
 function initialPrompt() {
     inquirer.prompt([
         {
@@ -21,6 +23,7 @@ function initialPrompt() {
     ]).then((data) => {
         let choice = data.options;
         console.log(choice)
+        // Switch statement being used to compare multiple possible conditions of an expression
         switch (choice) {
             case "View All Departments":
                 viewAllDepartments();
@@ -43,12 +46,16 @@ function initialPrompt() {
             case "Update Employee Role":
                 updateEmployeeRole();
                 break;
+            // When the "Quit" option is selected the default option is executed
             default:
                 process.exit()
         }
     })
 }
 
+// The following functions will use the imported Business class in the db folder
+
+// This function will format a table showing department names and department ids
 function viewAllDepartments() {
     db.findAllDepartments().then(([data]) => {
         console.log('\n')
@@ -56,6 +63,7 @@ function viewAllDepartments() {
     }).then(() => initialPrompt());
 }
 
+// This function will format a table showing job titles, role ids, the department that roles belong to, and the salary for those roles
 function viewAllRoles() {
     db.findAllRoles().then(([data]) => {
         console.log('\n')
@@ -63,6 +71,7 @@ function viewAllRoles() {
     }).then(() => initialPrompt());
 }
 
+// This function will format a table showing employee ids, first names, last names, job titles, departments, salaries, and managers that the employees report to
 function viewAllEmployees() {
     db.findAllEmployees().then(([data]) => {
         console.log('\n')
@@ -70,6 +79,7 @@ function viewAllEmployees() {
     }).then(() => initialPrompt());
 }
 
+// This function will prompt you to enter the name of the new department and then add it to the database
 function addDepartment() {
     inquirer.prompt([
         {
@@ -85,6 +95,7 @@ function addDepartment() {
     });
 }
 
+// This function will prompt you to enter the name, salary, and department for the new role and it to the database
 function addRole() {
     db.findAllDepartments().then(([data]) => {
         const department = data.map((dept) => {
@@ -116,6 +127,7 @@ function addRole() {
     })
 }
 
+// This function will prompt you to enter the new employee’s first name, last name, role, and manager then add it to the database
 function addEmployee() {
     inquirer.prompt([
         {
@@ -162,6 +174,7 @@ function addEmployee() {
                             message: "Please enter employees Manager?",
                             choices: managerOptions
                         }
+                    // Created an object out of the variables to pass through the query function
                     ]).then(res => {
                         let newEmployee = {
                             manager_id: res.manager,
@@ -180,6 +193,7 @@ function addEmployee() {
     });
 }
 
+// This function will prompt you to select the employee you want to update and their new role then add it to the database 
 function updateEmployeeRole() {
     db.findAllEmployees().then(([data]) => {
         const names = data.map(({ id, first_name, last_name }) => ({
